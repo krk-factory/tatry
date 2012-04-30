@@ -11,54 +11,67 @@
 #include <gl/glut.h>
 
 
+/* Dyrektywy dla preprocesora */
+
+#define ELEMENTY 	200
+#define WSPOLRZEDNE 3
+
+
 /* Zmienne globalne */
 
+// Wymiary okna
 int screen_width  = 640;
 int screen_height = 480;
 
-int pozycjaMyszyX;
-int pozycjaMyszyY;
+// Zmienne do kombinacji kamera + mysz
+int pozycjaMyszyX = 0;
+int pozycjaMyszyY = 0;
 
-int iloscLinii;
+double kameraX        = 0;
+double kameraZ        = 0;
+double kameraPredkosc = 0;
 
-double kameraX;
-double kameraZ;
-double kameraPredkosc;
+double kameraKat            = 0;
+double kameraPredkoscObrotu = 0;
 
-double kameraKat;
-double kameraPredkoscObrotu;
-
+// Zmienne od obrotu
 GLfloat dx = 1;
 GLfloat dy = 1;
 GLfloat dz = 1;
 
+// Maksymalne wartości poszczególnych współrzędnych
+double maxX = 0;
+double maxY = 0;
+double maxZ = 0;
+
+double minX = 0;
+double minY = 0;
+double minZ = 0;
+
+// Nazwa pliku
 const char nazwaPliku[] = "tatry_dane.txt";
 
-GLfloat* tablicaDaneX;
-GLfloat* tablicaDaneY;
-GLfloat* tablicaDaneZ;
+// Tablica do przechowywania danych
+double tablicaDane[ELEMENTY][ELEMENTY][WSPOLRZEDNE];
 
 
 /* Nagłówki funkcji */
 
 void resetKamery(void);
 
-void mysz       (int button, int state, int x, int y);	// Obsługa myszy
-void mysz_ruch  (int x, int y);							// Obsługa ruchu myszy
+void mysz       (int, int, int, int);		// Obsługa myszy
+void mysz_ruch  (int, int);					// Obsługa ruchu myszy
 
-void klawisz    (GLubyte k, int x, int y);				// Obsługa klawiszy
+void klawisz    (GLubyte, int, int);		// Obsługa klawiszy
 
-void rozmiar    (int width, int height);
+void rozmiar    (int, int);
 void rysuj      (void);
 
-void wczytajDane  (void);
-int iloscLiniiPlik(FILE*);
+void wczytajDane(void);
 
-void alokujTablice(int);
-void zwolnijPamiec(void);
-
-GLfloat wyznaczMax(GLfloat*);
-void normalizujTabice(GLfloat, GLfloat, GLfloat);
+void wyznaczMax		  (void);
+void wyznaczMin		  (void);
+void normalizujTablice(void);
 
 
 /* MAIN */
@@ -83,21 +96,16 @@ int main(int argc, char** argv)
 	
 	/* --- Przygotowanie danych --- */
 	
-	wczytajDane();	
-	
-	GLfloat mX = wyznaczMax(tablicaDaneX);
-	GLfloat mY = wyznaczMax(tablicaDaneY);
-	GLfloat mZ = wyznaczMax(tablicaDaneZ);
-	
-	normalizujTabice(mX, mY, mZ);
+	wczytajDane();
+	wyznaczMax();
+	wyznaczMin();
+	normalizujTablice();
 	
 	/* ---------------------- */
 	
 	glEnable(GL_DEPTH_TEST); 
 	
 	glutMainLoop();	
-
-	zwolnijPamiec();
 
     return 0; 
 }
@@ -139,6 +147,7 @@ void klawisz(GLubyte k, int x, int y)
 		case ' ':    
 			glutFullScreen();
 			break;
+		// Obroty
 		case 'o':
 			dx += 1;
 			break;
@@ -183,11 +192,8 @@ void rozmiar(int width, int height)
 // --- RYSOWANIE ---
 void rysuj(void)
 {
-	int k;
-	
-	GLfloat curSize;  		//aktualny rozmiar
-    GLfloat size[2];  		//dopuszczalny zakres wielkości
-    GLfloat step; 			//przyrost rozmiaru
+	int k1 = 0;
+	int k2 = 0;
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -197,10 +203,8 @@ void rysuj(void)
 	// Tło
 	glClearColor(0.1, 0.1, 0.1, 0.0);		
 	
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	//glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	//glEnable(GL_COLOR_MATERIAL); 
-	
-	glTranslatef(0.0, 0.0, -3);
 	
 	
 	/* --- Myszka i kamera --- */
@@ -213,38 +217,33 @@ void rysuj(void)
 	// Kamera
 	gluLookAt(kameraX, 0, kameraZ, kameraX + 100 * sin(kameraKat), 0, kameraZ - 100*cos(kameraKat), 0, 1, 0); 
 	
-	// Pobranie dopuszczalnych rozmiarów punktów
-    glGetFloatv(GL_POINT_SIZE_RANGE, size);
-    glGetFloatv(GL_POINT_SIZE_GRANULARITY, &step);
-    
-	// Ustalenie początkowego rozmiaru
-    curSize = size[0];
-	
 	
 	/* --- Rysowanie i "kolorowanie" --- */
+	
+	glTranslatef(-0.5, 0.3, -2.0);
+	glRotatef(35, 1.0, 0.0, 0.0);
 	
 	glRotatef(dx, 1.0, 0.0, 0.0);
     glRotatef(dy, 0.0, 1.0, 0.0);
     glRotatef(dz, 0.0, 0.0, 1.0);
 	
+	glColor3f(1.0, 0.0, 0.0);
 	
-	for(k = 0; k < iloscLinii; k ++)
-	{
-		//glColor3f(1.0-(float)(1.0/6.0)*fabs(tablicaDaneZ[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]));
-		glColor3f(1.0, 0.0, 0.0);
-		
-		glBegin(GL_TRIANGLES);
+	for(k2 = 0; k2 < ELEMENTY; k2++)
+		for(k1 = 0; k1 < ELEMENTY; k1++)
 		{
-          
-			glVertex3f(tablicaDaneX[k], tablicaDaneY[k], tablicaDaneZ[k]);
-			glVertex3f(tablicaDaneX[k], tablicaDaneY[k+1], tablicaDaneZ[k]);    
-			glVertex3f(tablicaDaneX[k+1], tablicaDaneY[k+1], tablicaDaneZ[k]);
-			
-		}  
-		glEnd();
-	}
-	
-	
+			glBegin(GL_TRIANGLES);		// dzielimy wysokość przez 8.0, żeby górki były mniejsze i lepiej wyglądały ;-)
+			{
+				glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
+				glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
+				glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				
+				glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
+				glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
+			}  
+			glEnd();
+		}
 	
 	/* ---------------------- */
   
@@ -256,7 +255,9 @@ void rysuj(void)
 
 void wczytajDane(void)
 {
-	int k = 0;
+	int k1 = 0;
+	int k2 = 0;
+	
 	FILE* f;
 	
 	if((f = fopen(nazwaPliku, "r")) == NULL)
@@ -265,71 +266,76 @@ void wczytajDane(void)
 		exit(-1);
 	}
 	
-	iloscLinii = iloscLiniiPlik(f);
-	
-	alokujTablice(iloscLinii);
-	
-	for(k = 0; k < iloscLinii; k++)
-	{
-		fscanf(f, "%f%f%f", &tablicaDaneX[k], &tablicaDaneY[k], &tablicaDaneZ[k]);
-	}
+	for(k1 = 0; k1 < ELEMENTY; k1++)
+		for(k2 = 0; k2 < ELEMENTY; k2++)
+		{
+			fscanf(f, "%lf%lf%lf", &tablicaDane[k1][k2][0], &tablicaDane[k1][k2][1], &tablicaDane[k1][k2][2]);
+		}
 	
 	fclose(f);
 }
 
-int iloscLiniiPlik(FILE* f)
+void wyznaczMax(void)
 {
-	char c;
-	int ile = 0;
-
-	while((c = fgetc(f)) != EOF)
-		if(c == '\n')
-			ile++;
-
-	if(c != '\n')
-		ile++;
-		
-	rewind(f);			// Przewinięcie na początek pliku
+	int k1 = 0;
+	int k2 = 0;
 	
-	return ile;
+	maxX = tablicaDane[0][0][0];
+	maxY = tablicaDane[0][0][1];
+	maxZ = tablicaDane[0][0][2];
+	
+	for(k1 = 1; k1 < ELEMENTY; k1++)
+		for(k2 = 1; k2 < ELEMENTY; k2++)
+		{
+			if(tablicaDane[k1][k2][0] > maxX)
+				maxX = tablicaDane[k1][k2][0];
+			
+			if(tablicaDane[k1][k2][1] > maxY)
+				maxY = tablicaDane[k1][k2][1];
+				
+			if(tablicaDane[k1][k2][2] > maxZ)
+				maxZ = tablicaDane[k1][k2][2];
+		}
 }
 
-void alokujTablice(int rozmiar)
+void wyznaczMin(void)
 {
-	tablicaDaneX = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
-	tablicaDaneY = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
-	tablicaDaneZ = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
+	int k1 = 0;
+	int k2 = 0;
+	
+	minX = tablicaDane[0][0][0];
+	minY = tablicaDane[0][0][1];
+	minZ = tablicaDane[0][0][2];
+	
+	for(k1 = 1; k1 < ELEMENTY; k1++)
+		for(k2 = 1; k2 < ELEMENTY; k2++)
+		{
+			if(tablicaDane[k1][k2][0] < minX)
+				minX = tablicaDane[k1][k2][0];
+			
+			if(tablicaDane[k1][k2][1] < minY)
+				minY = tablicaDane[k1][k2][1];
+				
+			if(tablicaDane[k1][k2][2] < minZ)
+				minZ = tablicaDane[k1][k2][2];
+		}
 }
 
-void zwolnijPamiec(void)
+void normalizujTablice(void)
 {
-	free(tablicaDaneX);
-	free(tablicaDaneY);
-	free(tablicaDaneZ);
-}
-
-GLfloat wyznaczMax(GLfloat* t)
-{
-	int k;
-	GLfloat max = t[0];
+	int k1 = 0;
+	int k2 = 0;
 	
-	for(k = 0; k < iloscLinii; k++)
-	{
-		if(t[k] > max)
-			max = t[k];
-	}
-	
-	return max;
-}
-
-void normalizujTabice(GLfloat maxX, GLfloat maxY, GLfloat maxZ)
-{
-	int k = 0;
-	
-	for(k = 0; k < iloscLinii; k++)
-	{
-		tablicaDaneX[k] = tablicaDaneX[k]/maxX;
-		tablicaDaneY[k] = tablicaDaneY[k]/maxY;
-		tablicaDaneZ[k] = tablicaDaneZ[k]/maxZ;
-	}
+	for(k1 = 0; k1 < ELEMENTY; k1++)
+		for(k2 = 0; k2 < ELEMENTY; k2++)		// Kombinacja ta spowodowana jest tym, że wartości współrzędnych geograficznych mieszczą się w przedziale ~ [0;0.3]
+		{
+			tablicaDane[k1][k2][0] -= minX;
+			tablicaDane[k1][k2][0] /= (maxX - minX);
+			
+			tablicaDane[k1][k2][1] -= minY;
+			tablicaDane[k1][k2][1] /= (maxY - minY);
+			
+			tablicaDane[k1][k2][2] -= minZ;
+			tablicaDane[k1][k2][2] /= (maxZ - minZ);
+		}
 }
