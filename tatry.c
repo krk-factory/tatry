@@ -1,16 +1,11 @@
-/* Pliki nag≈Ç√≥wkowe */
-
+/* Pliki nag≥Ûwkowe */
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h> 
-
 #include <math.h>
 #include <time.h>
-
 #include <gl/gl.h> 
-#include <gl/glut.h>
-
-
+#include "glut.h"
 /* Zmienne globalne */
 
 int screen_width  = 640;
@@ -39,14 +34,14 @@ GLfloat* tablicaDaneY;
 GLfloat* tablicaDaneZ;
 
 
-/* Nag≈Ç√≥wki funkcji */
+/* Nag≥Ûwki funkcji */
 
 void resetKamery(void);
 
-void mysz       (int button, int state, int x, int y);	// Obs≈Çuga myszy
-void mysz_ruch  (int x, int y);							// Obs≈Çuga ruchu myszy
+void mysz       (int button, int state, int x, int y);	// Obs≥uga myszy
+void mysz_ruch  (int x, int y);							// Obs≥uga ruchu myszy
 
-void klawisz    (GLubyte k, int x, int y);				// Obs≈Çuga klawiszy
+void klawisz    (GLubyte k, int x, int y);				// Obs≥uga klawiszy
 
 void rozmiar    (int width, int height);
 void rysuj      (void);
@@ -68,13 +63,13 @@ int main(int argc, char** argv)
     glutInitWindowPosition(0, 0);
     glutCreateWindow("Tatry");    
 
-	glutDisplayFunc(rysuj);			// def. funkcji rysujƒÖcej
-    glutIdleFunc(rysuj);			// def. funkcji rysujƒÖcej w czasie wolnym procesoora (w efekcie: ciƒÖgle wykonywanej)
-    glutReshapeFunc(rozmiar);		// def. obs≈Çugi zdarzenia resize (GLUT)
+	glutDisplayFunc(rysuj);			// def. funkcji rysujπcej
+    glutIdleFunc(rysuj);			// def. funkcji rysujπcej w czasie wolnym procesoora (w efekcie: ciπgle wykonywanej)
+    glutReshapeFunc(rozmiar);		// def. obs≥ugi zdarzenia resize (GLUT)
 	
-	glutKeyboardFunc(klawisz);		// def. obs≈Çugi klawiatury
-    glutMouseFunc(mysz); 			// def. obs≈Çugi zdarzenia przycisku myszy (GLUT)
-	glutMotionFunc(mysz_ruch); 		// def. obs≈Çugi zdarzenia ruchu myszy (GLUT)
+	glutKeyboardFunc(klawisz);		// def. obs≥ugi klawiatury
+    glutMouseFunc(mysz); 			// def. obs≥ugi zdarzenia przycisku myszy (GLUT)
+	glutMotionFunc(mysz_ruch); 		// def. obs≥ugi zdarzenia ruchu myszy (GLUT)
 	
 	resetKamery();
 	wczytajDane();
@@ -173,7 +168,7 @@ void rysuj(void)
 	int k;
 	
 	GLfloat curSize;  		//aktualny rozmiar
-    GLfloat size[2];  		//dopuszczalny zakres wielko≈õci
+    GLfloat size[2];  		//dopuszczalny zakres wielkoúci
     GLfloat step; 			//przyrost rozmiaru
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -181,18 +176,18 @@ void rysuj(void)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();	
 	
-	// T≈Ço
+	// T≥o
 	glClearColor(0.1, 0.1, 0.1, 0.0);		
 	
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	//glEnable(GL_COLOR_MATERIAL); 
 	
-	glTranslatef(0.0, 0.0, -1000);
+	glTranslatef(-19, -1, -1000);
 	
 	
 	/* --- Myszka i kamera --- */
 	
-	// Obs≈Çuga myszkƒÖ sceny
+	// Obs≥uga myszkπ sceny
     kameraKat += kameraPredkoscObrotu;		
 	kameraX   += kameraPredkosc * sin(kameraKat);
     kameraZ   -= kameraPredkosc * cos(kameraKat);
@@ -200,11 +195,11 @@ void rysuj(void)
 	// Kamera
 	gluLookAt(kameraX, 0, kameraZ, kameraX + 100 * sin(kameraKat), 0, kameraZ - 100*cos(kameraKat), 0, 1, 0); 
 	
-	// Pobranie dopuszczalnych rozmiar√≥w punkt√≥w
+	// Pobranie dopuszczalnych rozmiarÛw punktÛw
     glGetFloatv(GL_POINT_SIZE_RANGE, size);
     glGetFloatv(GL_POINT_SIZE_GRANULARITY, &step);
     
-	// Ustalenie poczƒÖtkowego rozmiaru
+	// Ustalenie poczπtkowego rozmiaru
     curSize=size[0];
 	
 	
@@ -214,20 +209,50 @@ void rysuj(void)
     glRotatef(dy, 0.0, 1.0, 0.0);
     glRotatef(dz, 0.0, 0.0, 1.0);
 	
-	
-	for(k = 0; k < iloscLinii; k ++)
+    glBegin(GL_TRIANGLE_STRIP);	
+	for(k = 0; k < iloscLinii; k++)
 	{
-		//glColor3f(1.0-(float)(1.0/6.0)*fabs(tablicaDaneZ[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]));
-		glColor3f(1.0, 0.0, 0.0);
+		//glColor3f(1.0-(float)(1.0/6.0)*fabs(tablicaDaneX[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneY[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]));
+	    glColor3f(1.0, 0.0, 0.0);
           
-		glBegin(GL_TRIANGLES);
-          
-		glVertex3f(tablicaDaneX[k], tablicaDaneY[k], tablicaDaneZ[k]);
-		glVertex3f(tablicaDaneX[k], tablicaDaneY[k+1], tablicaDaneZ[k]);    
-		glVertex3f(tablicaDaneX[k+1], tablicaDaneY[k], tablicaDaneZ[k]);
-          
+
+            // for each vertex, we calculate
+            // the grayscale shade color, 
+            // we set the texture coordinate,
+            // and we draw the vertex.
+
+            // draw vertex 0
+            glVertex3f(tablicaDaneX[k], 
+                       tablicaDaneZ[k], tablicaDaneZ[k]);
+            // draw vertex 1
+            glVertex3f(tablicaDaneX[k+1], 
+                       tablicaDaneZ[k], tablicaDaneZ[k]);
+            // draw vertex 2
+            glVertex3f(tablicaDaneX[k], 
+                       tablicaDaneZ[k+1], tablicaDaneZ[k]);
+            // draw vertex 3;
+            glVertex3f(tablicaDaneX[k+1], 
+                       tablicaDaneZ[k+1], tablicaDaneZ[k]);
+        }
 		glEnd();
-	}
+		
+	/*	GLfloat x,y,z;
+		
+  for(y=10 ;y >=-10;y-=1)
+    {
+         for(x=10;x>=-10;x-=1)
+         {
+              glColor3f(1.0-(float)(1.0/10.0)*fabs(x), 0.0+(float)(1.0/10.0)*fabs(y), 0.0+(float)(1.0/6)*fabs(z));
+              glBegin(GL_TRIANGLES);
+              z=4-(sin(sqrt(x*x+y*y)-3)+sqrt(x*x+y*y)-3);
+              glVertex3f(x,y,z);
+              z=4-(sin(sqrt((x+1)*(x+1)+y*y)-3)+sqrt((x+1)*(x+1)+y*y)-3);
+              glVertex3f(x+1,y,z);
+              z=4-(sin(sqrt(x*x+(y+1)*(y+1))-3)+sqrt(x*x+(y+1)*(y+1))-3);
+              glVertex3f(x,y+1,z);
+              glEnd();
+         }
+    }*/
 	
 	
 	
@@ -236,15 +261,15 @@ void rysuj(void)
     //glDisable(GL_COLOR_MATERIAL);
 	
     glFlush(); 				// Rysowanie w buforze
-    glutSwapBuffers(); 		// Wys≈Çanie na ekran
+    glutSwapBuffers(); 		// Wys≥anie na ekran
 }
 
 void wczytajDane(void)
 {
 	int k = 0;
 	FILE* f;
-	
-	if((f = fopen(nazwaPliku, "r")) == NULL)
+	FILE* dupa;
+	if((f = fopen("tatry.txt", "r")) == NULL)
 	{
 		printf("\nDEBUG: File error\n");
 		exit(-1);
@@ -274,16 +299,16 @@ int iloscLiniiPlik(FILE* f)
 	if(c != '\n')
 		ile++;
 		
-	rewind(f);			// Przewiniƒôcie na poczƒÖtek pliku
+	rewind(f);			// PrzewiniÍcie na poczπtek pliku
 	
 	return ile;
 }
 
 void alokujTablice(int rozmiar)
 {
-	tablicaDaneX = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
-	tablicaDaneY = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
-	tablicaDaneZ = (GLfloat*)malloc(rozmiar * sizeof(GLfloat));
+	tablicaDaneX = (float*)malloc(rozmiar * sizeof(float));
+	tablicaDaneY = (float*)malloc(rozmiar * sizeof(float));
+	tablicaDaneZ = (float*)malloc(rozmiar * sizeof(float));
 }
 
 void zwolnijPamiec(void)
