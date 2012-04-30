@@ -1,4 +1,4 @@
-/* Pliki nag³ówkowe */
+/* Pliki naglowkowe */
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h> 
@@ -6,6 +6,7 @@
 #include <time.h>
 #include <gl/gl.h> 
 #include "glut.h"
+
 /* Zmienne globalne */
 
 int screen_width  = 640;
@@ -34,14 +35,14 @@ GLfloat* tablicaDaneY;
 GLfloat* tablicaDaneZ;
 
 
-/* Nag³ówki funkcji */
+/* Naglowki funkcji */
 
 void resetKamery(void);
 
-void mysz       (int button, int state, int x, int y);	// Obs³uga myszy
-void mysz_ruch  (int x, int y);							// Obs³uga ruchu myszy
+void mysz       (int button, int state, int x, int y);				// Obsluga myszy
+void mysz_ruch  (int x, int y);							// Obsluga ruchu myszy
 
-void klawisz    (GLubyte k, int x, int y);				// Obs³uga klawiszy
+void klawisz    (GLubyte k, int x, int y);					// Obsluga klawiszy
 
 void rozmiar    (int width, int height);
 void rysuj      (void);
@@ -58,18 +59,18 @@ void zwolnijPamiec(void);
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);    
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(screen_width, screen_height);
-    glutInitWindowPosition(0, 0);
-    glutCreateWindow("Tatry");    
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(screen_width, screen_height);
+	glutInitWindowPosition(0, 0);
+	glutCreateWindow("Tatry");    
 
-	glutDisplayFunc(rysuj);			// def. funkcji rysuj¹cej
-    glutIdleFunc(rysuj);			// def. funkcji rysuj¹cej w czasie wolnym procesoora (w efekcie: ci¹gle wykonywanej)
-    glutReshapeFunc(rozmiar);		// def. obs³ugi zdarzenia resize (GLUT)
+	glutDisplayFunc(rysuj);			// def. funkcji rysujacej
+	glutIdleFunc(rysuj);			// def. funkcji rysujacej w czasie wolnym procesoora (w efekcie: ciagle wykonywanej)
+	glutReshapeFunc(rozmiar);		// def. obslugi zdarzenia resize (GLUT)
 	
-	glutKeyboardFunc(klawisz);		// def. obs³ugi klawiatury
-    glutMouseFunc(mysz); 			// def. obs³ugi zdarzenia przycisku myszy (GLUT)
-	glutMotionFunc(mysz_ruch); 		// def. obs³ugi zdarzenia ruchu myszy (GLUT)
+	glutKeyboardFunc(klawisz);		// def. obslugi klawiatury
+    	glutMouseFunc(mysz); 			// def. obslugi zdarzenia przycisku myszy (GLUT)
+	glutMotionFunc(mysz_ruch); 		// def. obslugi zdarzenia ruchu myszy (GLUT)
 	
 	resetKamery();
 	wczytajDane();
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
 
 	zwolnijPamiec();
 
-    return 0; 
+    	return 0; 
 }
 
 
@@ -168,15 +169,15 @@ void rysuj(void)
 	int k;
 	
 	GLfloat curSize;  		//aktualny rozmiar
-    GLfloat size[2];  		//dopuszczalny zakres wielkoœci
-    GLfloat step; 			//przyrost rozmiaru
+	GLfloat size[2];  		//dopuszczalny zakres wielkoï¿½ci
+	GLfloat step; 			//przyrost rozmiaru
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();	
 	
-	// T³o
+	// Tlo
 	glClearColor(0.1, 0.1, 0.1, 0.0);		
 	
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -187,29 +188,30 @@ void rysuj(void)
 	
 	/* --- Myszka i kamera --- */
 	
-	// Obs³uga myszk¹ sceny
-    kameraKat += kameraPredkoscObrotu;		
+	// Obsluga myszkï¿½ sceny
+	kameraKat += kameraPredkoscObrotu;		
 	kameraX   += kameraPredkosc * sin(kameraKat);
-    kameraZ   -= kameraPredkosc * cos(kameraKat);
+	kameraZ   -= kameraPredkosc * cos(kameraKat);
 	
 	// Kamera
 	gluLookAt(kameraX, 0, kameraZ, kameraX + 100 * sin(kameraKat), 0, kameraZ - 100*cos(kameraKat), 0, 1, 0); 
 	
-	// Pobranie dopuszczalnych rozmiarów punktów
-    glGetFloatv(GL_POINT_SIZE_RANGE, size);
-    glGetFloatv(GL_POINT_SIZE_GRANULARITY, &step);
+	// Pobranie dopuszczalnych rozmiarow punktow
+	glGetFloatv(GL_POINT_SIZE_RANGE, size);
+	glGetFloatv(GL_POINT_SIZE_GRANULARITY, &step);
     
-	// Ustalenie pocz¹tkowego rozmiaru
-    curSize=size[0];
+	// Ustalenie poczatkowego rozmiaru
+	curSize=size[0];
 	
 	
 	/* --- Rysowanie i "kolorowanie" --- */
 	
 	glRotatef(dx, 1.0, 0.0, 0.0);
-    glRotatef(dy, 0.0, 1.0, 0.0);
-    glRotatef(dz, 0.0, 0.0, 1.0);
+	glRotatef(dy, 0.0, 1.0, 0.0);
+	glRotatef(dz, 0.0, 0.0, 1.0);
 	
-    glBegin(GL_TRIANGLE_STRIP);	
+	glBegin(GL_TRIANGLE_STRIP);	
+	
 	for(k = 0; k < iloscLinii; k++)
 	{
 		//glColor3f(1.0-(float)(1.0/6.0)*fabs(tablicaDaneX[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneY[k]), 0.0+(float)(1.0/6.0)*fabs(tablicaDaneZ[k]));
@@ -234,7 +236,8 @@ void rysuj(void)
             glVertex3f(tablicaDaneX[k+1], 
                        tablicaDaneZ[k+1], tablicaDaneZ[k]);
         }
-		glEnd();
+	
+	glEnd();
 		
 	/*	GLfloat x,y,z;
 		
@@ -261,14 +264,14 @@ void rysuj(void)
     //glDisable(GL_COLOR_MATERIAL);
 	
     glFlush(); 				// Rysowanie w buforze
-    glutSwapBuffers(); 		// Wys³anie na ekran
+    glutSwapBuffers(); 		// Wysï¿½anie na ekran
 }
 
 void wczytajDane(void)
 {
 	int k = 0;
 	FILE* f;
-	FILE* dupa;
+
 	if((f = fopen("tatry.txt", "r")) == NULL)
 	{
 		printf("\nDEBUG: File error\n");
@@ -299,7 +302,7 @@ int iloscLiniiPlik(FILE* f)
 	if(c != '\n')
 		ile++;
 		
-	rewind(f);			// Przewiniêcie na pocz¹tek pliku
+	rewind(f);			// Przewiniï¿½cie na poczï¿½tek pliku
 	
 	return ile;
 }
