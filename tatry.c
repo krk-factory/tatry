@@ -2,13 +2,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h> 
 
 #include <math.h>
 #include <time.h>
 
-#include <gl/gl.h> 
-#include "glut.h"
+//LINUX
+#include <GL/gl.h>
+#include <GL/glut.h>
+
+//WINDOWS
+//#include <gl/gl.h>
+//#include "glut.h"
+//#include <windows.h>
 
 
 /* Dyrektywy dla preprocesora */
