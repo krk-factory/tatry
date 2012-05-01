@@ -8,7 +8,7 @@
 #include <time.h>
 
 #include <gl/gl.h> 
-#include <gl/glut.h>
+#include "glut.h"
 
 
 /* Dyrektywy dla preprocesora */
@@ -22,6 +22,9 @@
 // Wymiary okna
 int screen_width  = 640;
 int screen_height = 480;
+
+//zmienne do skal
+int skala=1;
 
 // Zmienne do kombinacji kamera + mysz
 int pozycjaMyszyX = 0;
@@ -54,6 +57,9 @@ const char nazwaPliku[] = "tatry_dane.txt";
 // Tablica do przechowywania danych
 double tablicaDane[ELEMENTY][ELEMENTY][WSPOLRZEDNE];
 
+//enum
+enum
+{skala_szar,skala_kol,EXIT};
 
 /* Nagłówki funkcji */
 
@@ -72,6 +78,8 @@ void wczytajDane(void);
 void wyznaczMax		  (void);
 void wyznaczMin		  (void);
 void normalizujTablice(void);
+
+void menu_skala(int wartosc);
 
 
 /* MAIN */
@@ -100,9 +108,14 @@ int main(int argc, char** argv)
 	wyznaczMax();
 	wyznaczMin();
 	normalizujTablice();
+	/* --- Menu kontekstowe --- */
+	int menu = glutCreateMenu(menu_skala);
+	glutAddMenuEntry("skala szarosci", skala_szar);
+	glutAddMenuEntry("skala kolorow", skala_kol);
+	glutAddMenuEntry("Wyjscie", EXIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	
 	/* ---------------------- */
-	
 	glEnable(GL_DEPTH_TEST); 
 	
 	glutMainLoop();	
@@ -199,7 +212,6 @@ void rysuj(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();	
-	
 	// Tło
 	glClearColor(0.1, 0.1, 0.1, 0.0);		
 	
@@ -228,23 +240,60 @@ void rysuj(void)
     glRotatef(dz, 0.0, 0.0, 1.0);
 	
 	glColor3f(1.0, 0.0, 0.0);
-	
+	if(skala==1)
+	{
 	for(k2 = 0; k2 < ELEMENTY; k2++)
 		for(k1 = 0; k1 < ELEMENTY; k1++)
 		{
+            //glColor3f(tablicaDane[k1][k2][1],tablicaDane[k1][k2][1],tablicaDane[k1][k2][1]); 
+            //glColor3f(tablicaDane[k1+1][k2][1],tablicaDane[k1+1][k2][1],tablicaDane[k1+1][k2][1]);
+            //glColor3f(tablicaDane[k1+1][k2+1][1],tablicaDane[k1+1][k2+1][1],tablicaDane[k1+1][k2+1][1]);
 			glBegin(GL_TRIANGLES);		// dzielimy wysokość przez 8.0, żeby górki były mniejsze i lepiej wyglądały ;-)
 			{
+                glColor3f(tablicaDane[k1][k2][1],tablicaDane[k1][k2][1],tablicaDane[k1][k2][1]);                     
 				glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
-				glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
-				glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
 				
-				glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				
+				glColor3f(tablicaDane[k1+1][k2][1],tablicaDane[k1+1][k2][1],tablicaDane[k1+1][k2][1]);
 				glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
-				glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
+				
+				
+				glColor3f(tablicaDane[k1+1][k2+1][1],tablicaDane[k1+1][k2+1][1],tablicaDane[k1+1][k2+1][1]);
+                glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				
+				//glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				//glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
+				//glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
 			}  
 			glEnd();
 		}
-	
+    }
+    else
+    {
+	for(k2 = 0; k2 < ELEMENTY; k2++)
+		for(k1 = 0; k1 < ELEMENTY; k1++)
+		{
+            glColor3f(0.3,0.3,0.3);
+			glBegin(GL_TRIANGLES);		// dzielimy wysokość przez 8.0, żeby górki były mniejsze i lepiej wyglądały ;-)
+			{
+                glColor3f(tablicaDane[k1][k2][0],tablicaDane[k1][k2][2],tablicaDane[k1][k2][1]);                     
+				glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
+				
+				
+				glColor3f(tablicaDane[k1+1][k2][0],tablicaDane[k1+1][k2][2],tablicaDane[k1+1][k2][1]);
+				glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
+				
+				
+				glColor3f(tablicaDane[k1+1][k2+1][0],tablicaDane[k1+1][k2+1][2],tablicaDane[k1+1][k2+1][1]);
+                glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				
+				//glVertex3f(tablicaDane[k1+1][k2+1][0], tablicaDane[k1+1][k2+1][2]/8.0, tablicaDane[k1+1][k2+1][1]);
+				//glVertex3f(tablicaDane[k1+1][k2][0], tablicaDane[k1+1][k2][2]/8.0, tablicaDane[k1+1][k2][1]);
+				//glVertex3f(tablicaDane[k1][k2][0], tablicaDane[k1][k2][2]/8.0, tablicaDane[k1][k2][1]);
+			}  
+			glEnd();
+		}        
+    }
 	/* ---------------------- */
   
     //glDisable(GL_COLOR_MATERIAL);
@@ -338,4 +387,19 @@ void normalizujTablice(void)
 			tablicaDane[k1][k2][2] -= minZ;
 			tablicaDane[k1][k2][2] /= (maxZ - minZ);
 		}
+}
+
+void menu_skala(int wartosc)
+{
+	switch(wartosc)
+	{
+		case skala_szar:
+			skala=1;
+			break;
+		case skala_kol:
+			skala=0;
+			break;
+		case EXIT:
+			exit(0);
+	}
 }
